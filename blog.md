@@ -196,7 +196,12 @@ compile our single file, the compiler would have to visit over 1500 files.
 Once the pre-processor has had a chance to run and put the tree of includes into
 our starting file, we can compile the source file to an object file. An object
 file is a collection of different bits of data, assembly and debugging symbols
-arranged so that it can all be easily accessible.
+arranged so that it can all be easily accessible. We can look at an object file
+with the `objdump` command:
+
+```
+objdump -dr simple.o
+```
 
 ### simple.o
 
@@ -229,10 +234,6 @@ Disassembly of section .text:
   3d:	b8 00 00 00 00       	mov    $0x0,%eax
   42:	c9                   	leaveq
   43:	c3                   	retq
-```
-
-```
-objdump -dr simple.o
 ```
 
 This is what the most complex file in our tiny example looks like. The important

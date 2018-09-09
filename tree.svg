@@ -4,13 +4,13 @@
      viewBox="0 0 500 250" version="1.1">
 
   <text x="155" y="20"
-        style="stroke:white">
+        style="stroke:blue">
     program
   </text>
   <line x1="185" y1="25" x2="185" y2="55"
-        style="stroke:white; stroke-width:1" />
+        style="stroke:blue; stroke-width:1" />
   <line x1="185" y1="25" x2="300" y2="55"
-        style="stroke:white; stroke-width:1" />
+        style="stroke:blue; stroke-width:1" />
 
   <text x="160" y="70"
         style="stroke:green">
