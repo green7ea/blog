@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     viewBox="0 0 500 250" version="1.1">
+
+  <text x="155" y="20"
+        style="stroke:blue">
+    program
+  </text>
+  <line x1="185" y1="25" x2="185" y2="55"
+        style="stroke:blue; stroke-width:1" />
+  <line x1="185" y1="25" x2="300" y2="55"
+        style="stroke:blue; stroke-width:1" />
+
+  <text x="160" y="70"
+        style="stroke:green">
+    simple.o
+  </text>
+  <text x="280" y="70"
+        style="stroke:red">
+    add.o
+  </text>
+
+  <line x1="185" y1="75" x2="185" y2="105"
+        style="stroke:green; stroke-width:1" />
+  <line x1="300" y1="75" x2="300" y2="105"
+        style="stroke:red; stroke-width:1" />
+
+  <text x="160" y="120"
+        style="stroke:green">
+    simple.c
+  </text>
+  <text x="280" y="120"
+        style="stroke:red">
+    add.c
+  </text>
+
+  <line x1="185" y1="125" x2="185" y2="155"
+        style="stroke:green; stroke-width:1" />
+  <line x1="300" y1="125" x2="300" y2="155"
+        style="stroke:red; stroke-width:1" />
+
+  <line x1="185" y1="125" x2="300" y2="155"
+        style="stroke:green; stroke-width:1" />
+
+  <text x="160" y="170"
+        style="stroke:green">
+    stdio.h
+  </text>
+  <text x="280" y="170"
+        style="stroke:red">
+    add.h
+  </text>
+
+  <line x1="185" y1="175" x2="185" y2="205"
+        style="stroke:green; stroke-width:1" />
+
+  <text x="135" y="220"
+        style="stroke:green">
+    other headers
+  </text>
+</svg>
