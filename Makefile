@@ -1,9 +1,11 @@
 .PHONY: all clean
 
-all: blog.html
+OUT = README.html
+
+all: $(OUT)
 
 %.html: %.md
 	pandoc -s -c style.css -o $@ $<
 
 clean:
-	rm -f blog.html
+	rm -f $(OUT)
