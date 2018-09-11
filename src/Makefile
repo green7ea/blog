@@ -3,6 +3,7 @@ CXXFLAGS = -MD -pipe -Wall -O0 -std=c++11 -g
 
 PROG1 = simple
 EX1 = add.o simple.o
+EX2 = mangling.o
 
 OBJS = $(EX1) $(EX2)
 DUMPS = $(OBJS:.o=.sym)

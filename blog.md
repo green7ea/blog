@@ -160,7 +160,7 @@ When you include a header, this header can include others and it can quickly get
 messy. If we compile a file with the `-H` flag, we can visualize the various header graphs:
 
 ```
-cc -H -O0 -std=c99 -g -c -o simple.o simple.c
+gcc -H -O0 -std=c99 -g -c -o simple.o simple.c
 ```
 
 - /usr/include/stdio.h
@@ -249,10 +249,11 @@ Above is a call to the unknown function `sub`.
 
 ## Symbol Tables
 
-We can get a summary of the exports and imports of functions and variables from
-the symbols tables at the start of the object file. Every function is known as a
-`symbol` in the object file. We can simply look at the different symbol tables
-to get an idea of what is in our object table.
+The important things in an object files are the functions it provides and the
+functions it needs. We can get a summary of the exports and imports of functions
+and variables from the symbols tables at the start of the object file. Every
+function is known as a `symbol` in the object file. We can simply look at the
+different symbol tables to get an idea of what is in our object table.
 
 To get symbol tables, we use the following commands:
 
@@ -283,13 +284,86 @@ nm simple.o > simple.sym
 When we want to build an executable, we have to have the function calls call the
 right function. To do this, we have a few options:
 
-1. Put everything in a continuous file and jump to the place where the correct
-   function is.
+1. Put everything in a continuous file and jump directly to the function.
 2. Keep everything in separate files and assemble them before running. Keep a
-   table of functions and look up where to jump to in the table.
+   table of offsets to functions and look up where to jump.
 
 The first option describes static linking. This is more efficient, less flexible
 and rarely used.
 
 The second option describes dynamic linking. It is a little bit slower but much
 more flexible and is the standard way to ship a library.
+
+## Differences in C++
+
+C++ was designed to be compatible with the C build process. In fact, the first
+C++ compiler was implemented as a pre-compiler that transformed a C++ source file
+into C.
+
+Modern C++, introduces two big differences:
+
+- templates,
+- mangling.
+
+Templates are complicated enough to have their own tutorial. Mangling is pretty
+simple and important. The following source file gives us an idea of mangling:
+
+```c++
+extern "C" int add_c(int a, int b)
+{
+    return a + b;
+}
+
+int add(int a, int b)
+{
+    return a + b;
+}
+
+int add(const int *a, const int &b)
+{
+    return *a + b;
+}
+
+float add(float a, float b)
+{
+    return a + b;
+}
+
+namespace manu
+{
+    int add(int a, int b)
+    {
+        return a + b;
+    }
+}
+```
+
+If we look at it with `nm`:
+
+```
+nm mangling.o
+```
+
+| Position | Section | Name            |
+|        - | -       | -               |
+|        0 | Text    | add_c           |
+|       44 | Text    | _Z3addff        |
+|       14 | Text    | _Z3addii        |
+|       28 | Text    | _Z3addPKiRS_    |
+|       5e | Text    | _ZN4manu3addEii |
+
+Basically, in C, functions are simply identified by their names. This prevents
+us from having namespaces and static dispatch. C++ gets around this by using
+mangling. `extern "C"` turns off mangling so that C++ can be compatible with C.
+
+Unfortunately, many compilers do mangling differently and so are incompatible.
+Luckily, most compilers have standardized on what you see above.
+
+- start with `_Z` since underscore capital letter is reserved in C,
+- an `N` after the `Z` indicates nested names,
+- put numbers that indicate the length of the next argument,
+- this gives us a list of strings,
+- the last string is the function, class or struct name,
+- the previous ones are the namespace,
+- if our names were nested, we insert an `E`,
+- we indicated the type and modifiers of our arguments.
