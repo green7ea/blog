@@ -37,10 +37,10 @@ that change.
 
 ![](tree.svg)
 
-The purpose of build tools (Make, CMake, meson, VisualStudio, etc.) is to have a
-model of this dependency tree and to rebuild any part of the tree which has a
-dependency which is newer than its artifact. To do this, it is also crucial that
-the build tool knows how to build each file.
+The purpose of build tools is to have a model of this dependency tree and to
+rebuild any part of the tree which has a dependency which is newer than its
+artifact. To do this, it is also crucial that the build tool knows how to build
+each file.
 
 ## Trivial C Program
 
@@ -418,3 +418,42 @@ int main(int, char **)
 |       18 | Text | main           | main                       |
 |        0 | Text | _Z3addPK3Numii | add(const Num *, int, int) |
 |        0 | Weak | _ZN3Num3addEii | Num::add(int, int)         |
+
+
+## Putting Things Together with Build Systems
+
+We don't want to remember and execute the build commands by hand (at least I
+don't). That's why we have build tools:
+
+- Make,
+- meson,
+- Autotools,
+- bazel,
+- CMake,
+- VisualStudio,
+- bash scripts,
+- etc.
+
+Generally, build tools do more or less but they all do a few things:
+
+- has a list of source files,
+- knows how to build the source files,
+- keeps a dependency graph to allow delta builds,
+- keeps a list of directories containing header files,
+- keeps a list of external libraries to link to (static/dynamic),
+- manages compiler flags (optimization level, warning level),
+- links an executable or library.
+
+Some build tools offer additional features:
+
+- program installation,
+- cross platform support,
+- cross compilation,
+- dependency installation (Maven, npm, cargo).
+
+Ideally, at the end of all this, we can quickly and easily generate the desired
+programs.
+
+We've been trying to generate the desired programs since at least 1972, have
+come close a few times but have never truly managed. Thankfully for this talk,
+most of the time, the compiler, linker and build system aren't to blame.
