@@ -37,6 +37,11 @@ that change.
 
 ![](tree.svg)
 
+The purpose of build tools (Make, CMake, meson, VisualStudio, etc.) is to have a
+model of this dependency tree and to rebuild any part of the tree which has a
+dependency which is newer than its artifact. To do this, it is also crucial that
+the build tool knows how to build each file.
+
 ## Trivial C Program
 
 Let's use a trivial C program to illustrate the build process. We can build it with the following commands:
@@ -116,6 +121,11 @@ Where does it find the files?
 C and C++ don't actually provide a mechanism for providing a list of include
 directories, that is up to the compiler which causes a few problems with cross
 platform development.
+
+Build tools are usually responsible for having a list of include directories and
+providing them to the compiler in the desired format.
+
+## Include Guards
 
 When you include a file, there is an include guard. This include guard sets a
 variable the first time it is run so that including the same file a second time
