@@ -264,14 +264,14 @@ nm simple.o > simple.sym
 
 ### add.o
 
-| Position | Section | Name |
-|        - | -       | -    |
-|        0 | Text    | add  |
-|       14 | Text    | sub  |
+| Position | Type | Name |
+|        - | -    | -    |
+|        0 | Text | add  |
+|       14 | Text | sub  |
 
 ### simple.o
 
-| Position | Section   | Name                  |
+| Position | Type      | Name                  |
 | -        | -         | -                     |
 |          | Undefined | add                   |
 |          | Undefined | _GLOBAL_OFFSET_TABLE_ |
@@ -342,22 +342,25 @@ If we look at it with `nm`:
 
 ```
 nm mangling.o
+c++filt _Z3addff
+...
 ```
 
-| Position | Section | Name            |
-|        - | -       | -               |
-|        0 | Text    | add_c           |
-|       44 | Text    | _Z3addff        |
-|       14 | Text    | _Z3addii        |
-|       28 | Text    | _Z3addPKiRS_    |
-|       5e | Text    | _ZN4manu3addEii |
+| Position | Type | Name            | Signature                        |
+|        - | -    | -               | -                                |
+|        0 | Text | add_c           | int add_c(int, int)              |
+|       44 | Text | _Z3addff        | float add(float, float)          |
+|       14 | Text | _Z3addii        | int add(int, int)                |
+|       28 | Text | _Z3addPKiRS_    | int add(const int *, const int & |
+|       5e | Text | _ZN4manu3addEii | int manu::add(int, int)          |
 
 Basically, in C, functions are simply identified by their names. This prevents
 us from having namespaces and static dispatch. C++ gets around this by using
 mangling. `extern "C"` turns off mangling so that C++ can be compatible with C.
 
 Unfortunately, many compilers do mangling differently and so are incompatible.
-Luckily, most compilers have standardized on what you see above.
+Luckily, most compilers have standardized on the Itanium C++ ABI that you see
+above.
 
 - start with `_Z` since underscore capital letter is reserved in C,
 - an `N` after the `Z` indicates nested names,
@@ -367,3 +370,41 @@ Luckily, most compilers have standardized on what you see above.
 - the previous ones are the namespace,
 - if our names were nested, we insert an `E`,
 - we indicated the type and modifiers of our arguments.
+
+[mangling details](https://github.com/gchatelet/gcc_cpp_mangling_documentation)
+
+## A Basis for Objects
+
+To build an object system, we need static dispatch. This is crucial so that we
+can differentiate between `a.method` and `b.method`. If we didn't have mangling,
+we could use the same method name in two different classes.
+
+```c++
+struct Num
+{
+    int add(int a, int b)
+    {
+        return a + b;
+    }
+};
+
+int add(const Num *self, int a, int b)
+{
+    return a + b;
+}
+
+int main(int, char **)
+{
+    Num a;
+    const int res1 = a.add(5, 6);
+    const int res2 = add(&a, 5, 6);
+
+    return res1 + res2;
+}
+```
+
+| Position | Type | Name           | Signature                  |
+|        - | -    | -              | -                          |
+|       18 | Text | main           | main                       |
+|        0 | Text | _Z3addPK3Numii | add(const Num *, int, int) |
+|        0 | Weak | _ZN3Num3addEii | Num::add(int, int)         |
