@@ -94,6 +94,54 @@ int main(int argv, char **argc)
 }
 ```
 
+## Why Headers?
+
+> TLDR we need to know the size of structures and function arguments
+
+When you call a function in C, you push elements onto the stack. If we start in
+function A and call function B, it might look something like this:
+
+- function A
+  - push space for the return value
+  - push parameters
+  - push the return address
+  - jump to the function B
+
+- function B
+  - push the address of the previous stack frame
+  - push values of registers that this function uses (so they can be restored)
+  - push space for local variables
+  - do the necessary computation
+  - restore the registers
+  - restore the previous stack frame
+  - store the function result
+  - jump to the return address
+
+- function A
+  - pop the parameters,
+  - use the return value.
+
+You then jump to that function's address. The function does its work and then
+jumps back to the return address to return control to the caller. The caller
+then removes from the stack:
+
+- the arguments,
+- the return address.
+
+This leaves the caller with the return value on the stack.
+
+To do all this, the caller has to know the number of arguments and the size of
+the arguments and return value. If the any of those are a structure, the caller
+has to know its details so that it can know its size and how to build it.
+
+Sometimes, we only use a structure through pointers or references in a file.
+Since pointers and references have a fixed size, we don't need the full
+structure detail to be able to build it, we only have to tell the compiler that
+a structure with the given name exists. This is a forward declaration and it's
+really useful to avoid circular dependencies and speed up compilation. It is
+also really helpful in the `PIMPL` idiom to avoid including huge headers or
+headers that heavily modify the compilation state (usually windows.h).
+
 ## Pre-processor
 
 Whenever you see a directive that starts with `#`, we are dealing with the C++
