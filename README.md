@@ -197,7 +197,7 @@ C:
 - based on the compiler state, it pretends to be empty.
 
 This is completely crazy, the file you include can change based on the status of
-the compiler. No only that but the included files themselves can modify the
+the compiler. Not only that but the included files themselves can modify the
 status of the compiler.
 
 This also makes compiling really long and really hard. Suppose that we want to
