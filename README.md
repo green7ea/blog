@@ -109,10 +109,10 @@ function A and call function B, it might look something like this:
 
 - function B
   - push the address of the previous stack frame
-  - push values of registers that this function uses (so they can be restored)
+  - push values of registers that this function uses
   - push space for local variables
   - do the necessary computation
-  - restore the registers
+  - restore the registers to the previous state
   - restore the previous stack frame
   - store the function result
   - jump to the return address
@@ -120,13 +120,6 @@ function A and call function B, it might look something like this:
 - function A
   - pop the parameters,
   - use the return value.
-
-You then jump to that function's address. The function does its work and then
-jumps back to the return address to return control to the caller. The caller
-then removes from the stack:
-
-- the arguments,
-- the return address.
 
 This leaves the caller with the return value on the stack.
 
@@ -141,6 +134,10 @@ a structure with the given name exists. This is a forward declaration and it's
 really useful to avoid circular dependencies and speed up compilation. It is
 also really helpful in the `PIMPL` idiom to avoid including huge headers or
 headers that heavily modify the compilation state (usually windows.h).
+
+For
+[more information](https://marcmutz.wordpress.com/translated-articles/pimp-my-pimpl/)
+on PIMPL (the original article is in German).
 
 ## Pre-processor
 
@@ -430,6 +427,10 @@ above.
 - we indicated the type and modifiers of our arguments.
 
 [mangling details](https://github.com/gchatelet/gcc_cpp_mangling_documentation)
+
+> Even with mangling, we don't have enough size information for function calls
+> to forgo headers. We are missing the size of the return value and the size of
+> structures.
 
 ## A Basis for Objects
 
