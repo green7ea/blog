@@ -29,22 +29,24 @@ Computers in 1972 weren't very powerful and so the process had to be broken down
 into smaller steps. This also allows you to rebuilt only the parts of the tree
 that change.
 
-- we have many C/C++ files,
-- we executed the pre-processor in each file,
-- this pulls in every header and its parents,
-- each file independently gets converted into an object file,
-- every object file is linked to form an executable or library.
+- we have many C/C++ source files,
+- for each source file, we run an independent compiler,
+  - we run the pre-processor over the current file,
+  - this pulls in every header and its parents into the file,
+  - the file gets compiled and transformed into an object,
+- we group every object we generated into an executable or library.
 
 ![](tree.svg)
 
-The purpose of build tools is to have a model of this dependency tree and to
-rebuild any part of the tree which has a dependency which is newer than its
-artifact. To do this, it is also crucial that the build tool knows how to build
-each file.
+Entering a command to compile every source file separately is annoying and so we
+have a build tool that knows how to compile each of our source file. Not only
+that but it can also regenerate the objects for the source files that have
+changed saving us a lot of time when recompiling with minor changes.
 
 ## Trivial C Program
 
-Let's use a trivial C program to illustrate the build process. We can build it with the following commands:
+Let's use a trivial C program to illustrate the build process. We can build it
+with the following commands:
 
 ```
 cc -Wall -O0 -std=c99 -g -c -o add.o add.c
@@ -98,51 +100,55 @@ int main(int argv, char **argc)
 
 > TLDR we need to know the size of structures and function arguments
 
-When you call a function in C, you push elements onto the stack. If we start in
-function A and call function B, it might look something like this:
+When our main function wants to call the `add` function, it needs to know what
+it returns and what it takes in as an argument before it can call the function.
+A typical call to `add` from our main would look like:
 
-- function A
-  - push space for the return value
-  - push parameters
-  - push the return address
-  - jump to the function B
+- our `main` function,
+  - push space for the return value onto a stack (an int),
+  - push the parameters onto the stack (`a` and `b`,
+  - push the return address (the next part of our main function),
+  - jump to the add function,
 
-- function B
-  - push the address of the previous stack frame
-  - push values of registers that this function uses
-  - push space for local variables
-  - do the necessary computation
-  - restore the registers to the previous state
-  - restore the previous stack frame
-  - store the function result
-  - jump to the return address
+- our `add` function
+  - store the execution state,
+  - add `a` and `b` placing the result in the return value space,
+  - restore the execution state,
+  - jump to the return address,
 
-- function A
-  - pop the parameters,
-  - use the return value.
+- back in our `main` function,
+  - pop the parameters (`a` and `b`),
+  - use the return value that is now on the stack.
 
-This leaves the caller with the return value on the stack.
+The steps necessary to call a function, how to build the stack and all those
+details are known as an ABI. Every compiler is free to have its own ABI and it's
+usually different for the different processors it supports which makes things
+complex but efficient.
 
-To do all this, the caller has to know the number of arguments and the size of
-the arguments and return value. If the any of those are a structure, the caller
-has to know its details so that it can know its size and how to build it.
+Since we are making space on the stack for our return value and parameters, we
+have to know their size. It any of those are a structure, we have to know what
+it's made of so that we can know its size.
 
-Sometimes, we only use a structure through pointers or references in a file.
-Since pointers and references have a fixed size, we don't need the full
-structure detail to be able to build it, we only have to tell the compiler that
-a structure with the given name exists. This is a forward declaration and it's
-really useful to avoid circular dependencies and speed up compilation. It is
-also really helpful in the `PIMPL` idiom to avoid including huge headers or
-headers that heavily modify the compilation state (usually windows.h).
+We let the compiler know all this with function and structure definitions.
+Classes also work the same way. You could put this definition in every source
+file that needs it but that's a terrible idea since they have to match if you
+want anything to work. To avoid having to change a ton of files if you make a
+small change to a definition, we put the definitions structures and functions we
+expect different source files in a common file we call a header.
 
-For
-[more information](https://marcmutz.wordpress.com/translated-articles/pimp-my-pimpl/)
-on PIMPL (the original article is in German).
+> Sometimes, we only use a structure through pointers or references which means
+> we don't really have to know that structure's exact size since we know the
+> size of a pointer. This leads to a clever trick known as pointer
+> implementation (PIMPL) which is really useful for speeding up compilation and
+> hiding implementation details. For
+> [more information](https://marcmutz.wordpress.com/translated-articles/pimp-my-pimpl/)
+> on PIMPL.
 
 ## Pre-processor
 
-Whenever you see a directive that starts with `#`, we are dealing with the C++
-pre-processor. The pre-processor does the following:
+In those header files and source files, you may have noticed lines that start
+with `#`. Whenever you see a directive that starts with `#`, we are dealing with
+the C pre-processor. The pre-processor does the following:
 
 - include files (`#include`),
 - macro expansions (`#define RADTODEG(x) ((x) * 57.29578)`),
@@ -151,12 +157,12 @@ pre-processor. The pre-processor does the following:
 
 Basically, the compiler has a state which can be modified by these directives.
 Since every `*.c` file is treated independently, every `*.c` file that is being
-compiled has its own state. The pre-processor works by replacing the tags in the
-source file by the result based on the state of the compiler.
+compiled has its own state. The headers that are included modify that file's
+state. The pre-processor works at a string level and replaces the tags in the
+source file by the result of basic functions based on the state of the compiler.
 
-We'll focus on the includes and the include guards. An include is really simple,
-it finds the file and replaces the `#include` line with the contents of that
-file.
+The `#include` pre-processor is really simple, it finds the file and replaces the
+`#include` line with the contents of that file.
 
 Where does it find the files?
 
@@ -165,16 +171,16 @@ Where does it find the files?
 
 C and C++ don't actually provide a mechanism for providing a list of include
 directories, that is up to the compiler which causes a few problems with cross
-platform development.
-
-Build tools are usually responsible for having a list of include directories and
-providing them to the compiler in the desired format.
+platform development. Build tools are usually responsible for providing the
+compiler with a list of include directories in the correct format.
 
 ## Include Guards
 
-When you include a file, there is an include guard. This include guard sets a
-variable the first time it is run so that including the same file a second time
-doesn't cause any problems.
+When you include a header, there is usually a `#ifndef` and `#define` statement
+at the top of the file and a corresponding `#endif` at the bottom. We call this
+an include guard. It is responsible for setting a variable the first time it is
+run so that including the same file a second time doesn't redefine things that
+exist and cause the compiler to panic.
 
 ```
 #ifndef __FILENAME__
@@ -193,9 +199,9 @@ C:
 - you include the same file a second time,
 - based on the compiler state, it pretends to be empty.
 
-This is completely crazy, the file you include can change based on the status of
+This is completely crazy, the file you include can change based on the state of
 the compiler. Not only that but the included files themselves can modify the
-status of the compiler.
+state of the compiler (windows.h is infamous for doing this).
 
 This also makes compiling really long and really hard. Suppose that we want to
 compile two files which both include `<string.h>` and that `<string.h>` itself
@@ -242,9 +248,14 @@ gcc -H -O0 -std=c99 -g -c -o simple.o simple.c
 - add.h
 
 We can see that we go from 2 includes to 22. This can quickly get out of hand
-for big projects. For example, if we had a source file that included OpenCV and
-ROS, it could easily balloon to 1500 or so header files. That means that to
-compile our single file, the compiler would have to visit over 1500 files.
+for big projects.
+
+The difficulty is that sometimes, you are including many headers indirectly
+through another. For example, if you include `ros.h`, it includes boost which
+quickly balloons the number of headers to parse. It can quickly get out of hand
+and to compile a single source file, you sometimes have to visit over 2000
+header files. This makes compilation excruciatingly slow and this is where the
+`PIMPL` idiom can really help.
 
 ## An Object File
 
