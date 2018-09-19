@@ -259,11 +259,11 @@ header files. This makes compilation excruciatingly slow and this is where the
 
 ## An Object File
 
-Once the pre-processor has had a chance to run and put the tree of includes into
-our starting file, we can compile the source file to an object file. An object
-file is a collection of different bits of data, assembly and debugging symbols
-arranged so that it can all be easily accessible. We can look at an object file
-with the `objdump` command:
+After all the work, the compiler can do the actual compiling of our source file
+with all the headers pasted into it. Once the compilation is finished, we have
+an object file. An object file is an organized way to store assembly functions
+that aren't yet linked together. We can examine the object file we generate with
+the `simple.c` source file with the following command:
 
 ```
 objdump -dr simple.o
@@ -304,22 +304,19 @@ Disassembly of section .text:
 
 This is what the most complex file in our tiny example looks like. The important
 thing to notice is that the assembly code is grouped into the `<main>` function
-and that there are calls to functions that don't yet exists:
+and that there are calls to functions that don't yet exists like the call to sub
+bellow:
 
 ```
 25:	e8 00 00 00 00       	callq  2a <main+0x2a>
 			26: R_X86_64_PLT32	sub-0x4
 ```
 
-Above is a call to the unknown function `sub`.
-
 ## Symbol Tables
 
-The important things in an object files are the functions it provides and the
-functions it needs. We can get a summary of the exports and imports of functions
-and variables from the symbols tables at the start of the object file. Every
-function is known as a `symbol` in the object file. We can simply look at the
-different symbol tables to get an idea of what is in our object table.
+At the top of an object file is a list of all the functions that are defined in
+that object and all the functions that are used but not defined. This is known
+as a symbol table.
 
 To get symbol tables, we use the following commands:
 
@@ -347,12 +344,13 @@ nm simple.o > simple.sym
 
 ## A Linker's Job
 
-When we want to build an executable, we have to have the function calls call the
-right function. To do this, we have a few options:
+To get an executable, we put many object files together and link the calls to
+missing functions to the actual functions found in other objects. To do this,
+we have a few options:
 
-1. Put everything in a continuous file and jump directly to the function.
-2. Keep everything in separate files and assemble them before running. Keep a
-   table of offsets to functions and look up where to jump.
+1. Link the functions directly together by jumping directly to the function.
+2. Have a table that contains our functions and look up where to jump before
+   jumping to the desired function.
 
 The first option describes static linking. This is more efficient, less flexible
 and rarely used.
@@ -363,8 +361,8 @@ more flexible and is the standard way to ship a library.
 ## Differences in C++
 
 C++ was designed to be compatible with the C build process. In fact, the first
-C++ compiler was implemented as a pre-compiler that transformed a C++ source file
-into C.
+C++ compiler was known as "C with Classes" and it was a pre-compiler that
+transformed a C++ into C.
 
 Modern C++, introduces two big differences:
 
@@ -421,8 +419,9 @@ c++filt _Z3addff
 |       5e | Text | _ZN4manu3addEii | int manu::add(int, int)          |
 
 Basically, in C, functions are simply identified by their names. This prevents
-us from having namespaces and static dispatch. C++ gets around this by using
-mangling. `extern "C"` turns off mangling so that C++ can be compatible with C.
+us from having namespaces and having a function with the same name but different
+arguments. C++ gets around this by using mangling. `extern "C"` turns off
+mangling so that C++ can be compatible with C.
 
 Unfortunately, many compilers do mangling differently and so are incompatible.
 Luckily, most compilers have standardized on the Itanium C++ ABI that you see
@@ -445,9 +444,10 @@ above.
 
 ## A Basis for Objects
 
-To build an object system, we need static dispatch. This is crucial so that we
+To build an object system, we need static dispatch (when two functions have the
+same name, calling the one with matching arguments). This is crucial so that we
 can differentiate between `a.method` and `b.method`. If we didn't have mangling,
-we could use the same method name in two different classes.
+we couldn't use the same method name in two different classes.
 
 ```c++
 struct Num
@@ -494,22 +494,23 @@ don't). That's why we have build tools:
 - bash scripts,
 - etc.
 
-Generally, build tools do more or less but they all do a few things:
+Generally, build tools do more or less but a build tool usually does the
+following:
 
 - has a list of source files,
-- knows how to build the source files,
-- keeps a dependency graph to allow delta builds,
+- knows how to build each source file,
+- keeps a dependency graph to rebuild only files that change,
 - keeps a list of directories containing header files,
 - keeps a list of external libraries to link to (static/dynamic),
 - manages compiler flags (optimization level, warning level),
-- links an executable or library.
+- knowns which files to link into executables and libraries.
 
 Some build tools offer additional features:
 
 - program installation,
 - cross platform support,
 - cross compilation,
-- dependency installation (Maven, npm, cargo).
+- dependency installation.
 
 Ideally, at the end of all this, we can quickly and easily generate the desired
 programs.
