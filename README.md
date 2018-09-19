@@ -26,8 +26,7 @@ differences but we'll be focusing on the GNU tools to keep things simple.
 ## An Overview
 
 Computers in 1972 weren't very powerful and so the process had to be broken down
-into smaller steps. This also allows you to rebuilt only the parts of the tree
-that change.
+into smaller steps. This also allows you to rebuilt only the parts that change.
 
 - we have many C/C++ source files,
 - for each source file, we run an independent compiler,
@@ -39,7 +38,7 @@ that change.
 ![](tree.svg)
 
 Entering a command to compile every source file separately is annoying and so we
-have a build tool that knows how to compile each of our source file. Not only
+have a build tool that knows how to compile each of our source files. Not only
 that but it can also regenerate the objects for the source files that have
 changed saving us a lot of time when recompiling with minor changes.
 
@@ -120,35 +119,34 @@ A typical call to `add` from our main would look like:
   - pop the parameters (`a` and `b`),
   - use the return value that is now on the stack.
 
-The steps necessary to call a function, how to build the stack and all those
-details are known as an ABI. Every compiler is free to have its own ABI and it's
-usually different for the different processors it supports which makes things
-complex but efficient.
+The way to call a function and the method for building the stack make up most of
+an ABI (Application Binary Interface) definition. Every compiler is free to have
+its own ABI. The same compiler usually has a different ABI for the different
+processors it supports. This makes things complex but efficient.
 
 Since we are making space on the stack for our return value and parameters, we
-have to know their size. It any of those are a structure, we have to know what
-it's made of so that we can know its size.
+have to know their size. If any of those are a structure, we have to know what
+it's made of so that we can know its size. We let the compiler know all this
+with function and structure definitions.
 
-We let the compiler know all this with function and structure definitions.
-Classes also work the same way. You could put this definition in every source
-file that needs it but that's a terrible idea since they have to match if you
-want anything to work. To avoid having to change a ton of files if you make a
-small change to a definition, we put the definitions structures and functions we
-expect different source files in a common file we call a header.
+You could put a function's definition in every source file that needs it but
+that's a terrible idea since the definition has to be the same everywhere if you
+want anything to work. Instead of having the same definition everywhere, we put
+the definition in a common file and include it where it is necessary. This
+common file is what we known as a header.
 
 > Sometimes, we only use a structure through pointers or references which means
-> we don't really have to know that structure's exact size since we know the
-> size of a pointer. This leads to a clever trick known as pointer
-> implementation (PIMPL) which is really useful for speeding up compilation and
-> hiding implementation details. For
+> we don't really have to know that structure's exact size. This leads to a
+> clever trick known as pointer implementation (PIMPL) which is really useful
+> for speeding up compilation and hiding implementation details. For
 > [more information](https://marcmutz.wordpress.com/translated-articles/pimp-my-pimpl/)
 > on PIMPL.
 
 ## Pre-processor
 
-In those header files and source files, you may have noticed lines that start
-with `#`. Whenever you see a directive that starts with `#`, we are dealing with
-the C pre-processor. The pre-processor does the following:
+In those header files and source files, you've hopefully noticed lines that
+start with `#`. Whenever you see a directive that starts with `#`, we are
+dealing with the C pre-processor. The pre-processor does the following:
 
 - include files (`#include`),
 - macro expansions (`#define RADTODEG(x) ((x) * 57.29578)`),
@@ -161,25 +159,25 @@ compiled has its own state. The headers that are included modify that file's
 state. The pre-processor works at a string level and replaces the tags in the
 source file by the result of basic functions based on the state of the compiler.
 
-The `#include` pre-processor is really simple, it finds the file and replaces the
-`#include` line with the contents of that file.
+The `#include` pre-processor is probably the most important. Luckily, it is
+really simple: it finds the file and replaces the `#include` line with the
+contents of that file.
 
 Where does it find the files?
 
 - `#include <sum.h>` looks for `sum.h` in a list of include directories,
 - `#include "sum.h"` does the same but looks in the current folder first.
 
-C and C++ don't actually provide a mechanism for providing a list of include
-directories, that is up to the compiler which causes a few problems with cross
-platform development. Build tools are usually responsible for providing the
-compiler with a list of include directories in the correct format.
+C and C++ don't actually define a mechanism for providing the list of include
+directories, that is up to the compiler. This causes many problems with cross
+platform development which some build tools can solve.
 
 ## Include Guards
 
 When you include a header, there is usually a `#ifndef` and `#define` statement
 at the top of the file and a corresponding `#endif` at the bottom. We call this
 an include guard. It is responsible for setting a variable the first time it is
-run so that including the same file a second time doesn't redefine things that
+run so that including the same file a second time doesn't redefine things that already
 exist and cause the compiler to panic.
 
 ```
@@ -191,7 +189,7 @@ exist and cause the compiler to panic.
 #endif
 ```
 
-It's a very useful trick but it's also one of the more fundamental problems of
+This is a very useful trick but it's also one of the more fundamental problems of
 C:
 
 - you include a file a first time,
@@ -199,21 +197,20 @@ C:
 - you include the same file a second time,
 - based on the compiler state, it pretends to be empty.
 
-This is completely crazy, the file you include can change based on the state of
+That is completely crazy - the file you include can change based on the state of
 the compiler. Not only that but the included files themselves can modify the
 state of the compiler (windows.h is infamous for doing this).
 
-This also makes compiling really long and really hard. Suppose that we want to
+Because of this, compiling becomes slow and complex. Suppose that we want to
 compile two files which both include `<string.h>` and that `<string.h>` itself
 includes about 50 other files. We are not able to cache `<string.h>` without
 proving that the compiler state is the same when we include it!
 
 So what started out as a simple, easy to implement solution turns out to scale
-really poorly. This wasn't a problem in 1972 when the computer limited the
+really poorly. This wasn't an issue in 1972 when the computers limited the
 complexity but almost 50 years later, it's a big problem. The C++ standards
-committee has been trying to introduce a module system to fix this problem but
-it's a difficult task to change such a fundamental system in an established
-language.
+committee has been trying to introduce a module system to fix this but it's a
+difficult task to change such a fundamental system in an established language.
 
 ## Header Trees
 
@@ -251,19 +248,21 @@ We can see that we go from 2 includes to 22. This can quickly get out of hand
 for big projects.
 
 The difficulty is that sometimes, you are including many headers indirectly
-through another. For example, if you include `ros.h`, it includes boost which
-quickly balloons the number of headers to parse. It can quickly get out of hand
-and to compile a single source file, you sometimes have to visit over 2000
+through another header. For example, if you include `ros.h`, it includes `boost`
+which quickly balloons the number of headers to parse. It can quickly get out of
+hand and to compile a single source file, you sometimes have to visit over 2000
 header files. This makes compilation excruciatingly slow and this is where the
 `PIMPL` idiom can really help.
 
 ## An Object File
 
-After all the work, the compiler can do the actual compiling of our source file
+After all this work, the compiler can do the actual compiling of our source file
 with all the headers pasted into it. Once the compilation is finished, we have
-an object file. An object file is an organized way to store assembly functions
-that aren't yet linked together. We can examine the object file we generate with
-the `simple.c` source file with the following command:
+an object file.
+
+An object file is an organized way to store assembly functions that aren't yet
+linked together. We can examine the object file we generate with the `simple.c`
+source file with the following command:
 
 ```
 objdump -dr simple.o
@@ -304,8 +303,8 @@ Disassembly of section .text:
 
 This is what the most complex file in our tiny example looks like. The important
 thing to notice is that the assembly code is grouped into the `<main>` function
-and that there are calls to functions that don't yet exists like the call to sub
-bellow:
+and that there are calls to functions that don't yet exist like the call to
+`sub` copied below:
 
 ```
 25:	e8 00 00 00 00       	callq  2a <main+0x2a>
@@ -314,11 +313,11 @@ bellow:
 
 ## Symbol Tables
 
-At the top of an object file is a list of all the functions that are defined in
-that object and all the functions that are used but not defined. This is known
-as a symbol table.
+At the top of an object file there is a list of all the functions that are
+defined in that object and all the functions that are used but not defined. This
+is known as a symbol table.
 
-To get symbol tables, we use the following commands:
+To get our symbol tables, we use the following commands:
 
 ```
 nm add.o > add.sym
@@ -344,12 +343,12 @@ nm simple.o > simple.sym
 
 ## A Linker's Job
 
-To get an executable, we put many object files together and link the calls to
-missing functions to the actual functions found in other objects. To do this,
-we have a few options:
+To get an executable, we put many object files together and link the undefined
+function calls their definitions found in other object files. There are two ways
+to do this:
 
-1. Link the functions directly together by jumping directly to the function.
-2. Have a table that contains our functions and look up where to jump before
+1. Linking the functions directly together by jumping directly to the function.
+2. Having a table that contains our functions and look up where to jump before
    jumping to the desired function.
 
 The first option describes static linking. This is more efficient, less flexible
@@ -360,17 +359,18 @@ more flexible and is the standard way to ship a library.
 
 ## Differences in C++
 
-C++ was designed to be compatible with the C build process. In fact, the first
-C++ compiler was known as "C with Classes" and it was a pre-compiler that
-transformed a C++ into C.
+So far, we've been talking about C but luckily, C++ was designed to be
+compatible with the C build process. In fact, the first C++ compiler was known
+as "C with Classes" and it was a pre-compiler that transformed a C++ into C.
 
 Modern C++, introduces two big differences:
 
 - templates,
 - mangling.
 
-Templates are complicated enough to have their own tutorial. Mangling is pretty
-simple and important. The following source file gives us an idea of mangling:
+Templates are complicated enough to have their own tutorial but mangling is
+pretty simple and more important. The following source file gives us an idea of
+mangling:
 
 ```c++
 extern "C" int add_c(int a, int b)
@@ -424,15 +424,15 @@ arguments. C++ gets around this by using mangling. `extern "C"` turns off
 mangling so that C++ can be compatible with C.
 
 Unfortunately, many compilers do mangling differently and so are incompatible.
-Luckily, most compilers have standardized on the Itanium C++ ABI that you see
-above.
+Luckily, most compilers have recently standardized on the Itanium C++ ABI that
+you see above.
 
 - start with `_Z` since underscore capital letter is reserved in C,
 - an `N` after the `Z` indicates nested names,
 - put numbers that indicate the length of the next argument,
 - this gives us a list of strings,
 - the last string is the function, class or struct name,
-- the previous ones are the namespace,
+- the previous ones are the namespaces or outer classes,
 - if our names were nested, we insert an `E`,
 - we indicated the type and modifiers of our arguments.
 
@@ -494,8 +494,7 @@ don't). That's why we have build tools:
 - bash scripts,
 - etc.
 
-Generally, build tools do more or less but a build tool usually does the
-following:
+A build tool usually:
 
 - has a list of source files,
 - knows how to build each source file,
@@ -503,7 +502,7 @@ following:
 - keeps a list of directories containing header files,
 - keeps a list of external libraries to link to (static/dynamic),
 - manages compiler flags (optimization level, warning level),
-- knowns which files to link into executables and libraries.
+- knows which files to link into executables and libraries.
 
 Some build tools offer additional features:
 
@@ -512,9 +511,9 @@ Some build tools offer additional features:
 - cross compilation,
 - dependency installation.
 
-Ideally, at the end of all this, we can quickly and easily generate the desired
+Ideally, at the end of all this, we can quickly and easily generate bug free
 programs.
 
-We've been trying to generate the desired programs since at least 1972, have
-come close a few times but have never truly managed. Thankfully for this talk,
-most of the time, the compiler, linker and build system aren't to blame.
+We've been trying to generate bug free programs since at least 1972, have come
+close a few times but have never truly managed. Thankfully, most of the time,
+the compiler, linker and build system aren't to blame.
