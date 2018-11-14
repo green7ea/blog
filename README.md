@@ -1,4 +1,4 @@
-# The C++ Build Process
+# The C++ Build Process Explained
 
 > The last good thing written in C was Franz Schubert's Symphony Number 9.
 >
