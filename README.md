@@ -26,7 +26,7 @@ differences but we'll be focusing on the GNU tools to keep things simple.
 ## An Overview
 
 Computers in 1972 weren't very powerful and so the process had to be broken down
-into smaller steps. This also allows you to rebuilt only the parts that change.
+into smaller steps. This also allows you to rebuild only the parts that change.
 
 - we have many C/C++ source files,
 - for each source file, we run an independent compiler,
