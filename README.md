@@ -55,13 +55,13 @@ cc -Wall -O0 -std=c99 -g -c -o simple.o simple.c
 ### add.h
 
 ```c
-#ifndef __ADD_H__
-#define __ADD_H__
+#ifndef ADD_H_INCLUDED
+#define ADD_H_INCLUDED
 
 int add(int a, int b);
 int sub(int a, int b);
 
-#endif // __ADD_H__
+#endif // ADD_H_INCLUDED
 ```
 
 ### add.c
@@ -181,8 +181,8 @@ run so that including the same file a second time doesn't redefine things that a
 exist and cause the compiler to panic.
 
 ```
-#ifndef __FILENAME__
-#define __FILENAME__
+#ifndef FILENAME_INCLUDED
+#define FILENAME_INCLUDED
 
 // code
 
