@@ -415,7 +415,7 @@ c++filt _Z3addff
 |        0 | Text | add_c           | int add_c(int, int)              |
 |       44 | Text | _Z3addff        | float add(float, float)          |
 |       14 | Text | _Z3addii        | int add(int, int)                |
-|       28 | Text | _Z3addPKiRS_    | int add(const int *, const int & |
+|       28 | Text | \_Z3addPKiRS\_  | int add(const int *, const int &)|
 |       5e | Text | _ZN4manu3addEii | int manu::add(int, int)          |
 
 Basically, in C, functions are simply identified by their names. This prevents
