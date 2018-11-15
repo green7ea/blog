@@ -127,7 +127,7 @@ processors it supports. This makes things complex but efficient.
 Since we are making space on the stack for our return value and parameters, we
 have to know their size. If any of those are a structure, we have to know what
 it's made of so that we can know its size. We let the compiler know all this
-with function and structure definitions.
+with function declarations and structure definitions.
 
 You could put a function's declaration in every source file that needs it but
 that's a terrible idea since the declaration has to be the same everywhere if you
@@ -344,8 +344,8 @@ nm simple.o > simple.sym
 ## A Linker's Job
 
 To get an executable, we put many object files together and link the undefined
-function calls their definitions found in other object files. There are two ways
-to do this:
+function calls to their implementations found in other object files. There are
+two ways to do this:
 
 1. Linking the functions directly together by jumping directly to the function.
 2. Having a table that contains our functions and look up where to jump before
