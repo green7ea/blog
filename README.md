@@ -252,7 +252,7 @@ through another header. For example, if you include `ros.h`, it includes `boost`
 which quickly balloons the number of headers to parse. It can quickly get out of
 hand and to compile a single source file, you sometimes have to visit over 2000
 header files. This makes compilation excruciatingly slow and this is where the
-`PIMPL` idiom can really help.
+[`PIMPL`](https://en.cppreference.com/w/cpp/language/pimpl) idiom can really help.
 
 ## An Object File
 
