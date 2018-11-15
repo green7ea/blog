@@ -133,7 +133,7 @@ You could put a function's declaration in every source file that needs it but
 that's a terrible idea since the declaration has to be the same everywhere if you
 want anything to work. Instead of having the same declaration everywhere, we put
 the declaration in a common file and include it where it is necessary. This
-common file is what we known as a header.
+common file is what we know as a header.
 
 > Sometimes, we only use a structure through pointers or references which means
 > we don't really have to know that structure's exact size. This leads to a
