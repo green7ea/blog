@@ -1,7 +1,7 @@
-#ifndef __ADD_H__
-#define __ADD_H__
+#ifndef ADD_H_INCLUDED
+#define ADD_H_INCLUDED
 
 int add(int a, int b);
 int sub(int a, int b);
 
-#endif // __ADD_H__
+#endif // ADD_H_INCLUDED
