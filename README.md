@@ -129,10 +129,10 @@ have to know their size. If any of those are a structure, we have to know what
 it's made of so that we can know its size. We let the compiler know all this
 with function and structure definitions.
 
-You could put a function's definition in every source file that needs it but
-that's a terrible idea since the definition has to be the same everywhere if you
-want anything to work. Instead of having the same definition everywhere, we put
-the definition in a common file and include it where it is necessary. This
+You could put a function's declaration in every source file that needs it but
+that's a terrible idea since the declaration has to be the same everywhere if you
+want anything to work. Instead of having the same declaration everywhere, we put
+the declaration in a common file and include it where it is necessary. This
 common file is what we known as a header.
 
 > Sometimes, we only use a structure through pointers or references which means
