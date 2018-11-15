@@ -105,7 +105,7 @@ A typical call to `add` from our main would look like:
 
 - our `main` function,
   - push space for the return value onto a stack (an int),
-  - push the parameters onto the stack (`a` and `b`,
+  - push the parameters onto the stack (`a` and `b`),
   - push the return address (the next part of our main function),
   - jump to the add function,
 
