@@ -1,0 +1,6 @@
+BasedOnStyle: llvm
+AllowShortFunctionsOnASingleLine: None
+ColumnLimit: 80
+BreakConstructorInitializers: BeforeComma
+PackConstructorInitializers: Never
+BreakTemplateDeclarations: Yes

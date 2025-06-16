@@ -12,7 +12,7 @@ FileWrapper::FileWrapper(const std::string &path) {
 }
 
 FileWrapper::FileWrapper(FileWrapper &&wrapper)
-: fd(wrapper.fd) {
+    : fd(wrapper.fd) {
   // 'wrapper' won't close a fd with -1 in its
   // destructor.
   wrapper.fd = -1;

@@ -18,7 +18,8 @@ NaiveFile::~NaiveFile() {
     printf("(fd %i) ~NaiveFile closing\n", fd);
 
     if (close(fd) < 0) {
-      fprintf(stderr, "  (fd %i) Couldn't close file: '%s'\n", fd, strerror(errno));
+      fprintf(stderr, "  (fd %i) Couldn't close file: '%s'\n", fd,
+              strerror(errno));
     }
   }
 }

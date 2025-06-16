@@ -17,5 +17,5 @@ public:
   std::string read_1024() const;
 
 private:
-  int fd { -1 };
+  int fd{-1};
 };
